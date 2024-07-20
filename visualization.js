@@ -43,7 +43,7 @@ d3.csv("us-states.csv").then(data => {
     // }
 
     function scene1() {
-        d3.select("#container").append("h1").text("Initial Outbreak in 2020");
+        d3.select("#container").append("h1").text("Initial Outbreak in 202020");
         d3.select("#container").append("p").text("The initial outbreak of COVID-19 in 2020 and its impact on key states.");
 
         // Set up the SVG and dimensions
