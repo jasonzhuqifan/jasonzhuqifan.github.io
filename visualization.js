@@ -72,7 +72,7 @@ d3.csv("us-states.csv").then(data => {
             });
 
             // Filter data for key states and for the year 2020
-            const keyStates = ["California", "New York"];
+            const keyStates = ["California", "Florida"];
             const filteredData = data.filter(d => keyStates.includes(d.state) && d.date.getFullYear() === 2020);
 
             // Set the domains of the scales
@@ -167,7 +167,7 @@ d3.csv("us-states.csv").then(data => {
     // Scene 2: Peak and Decline in 2021
     function scene2() {
         d3.select("#container").html(""); // Clear the container
-        d3.select("#container").append("h1").text("COVID-19 Trends in 202111");
+        d3.select("#container").append("h1").text("COVID-19 Trends in 2021");
         d3.select("#container").append("p").text("Key events and trends in the COVID-19 pandemic during 2021.");
 
         // Set up the SVG and dimensions
@@ -195,11 +195,8 @@ d3.csv("us-states.csv").then(data => {
             });
 
             // Filter data for key states and for the year 2021
-            const keyStates = ["California", "New York"];
+            const keyStates = ["California", "Florida"];
             const filteredData = data.filter(d => keyStates.includes(d.state) && d.date.getFullYear() === 2021);
-
-            // Nest data by state
-            const nestedData = d3.group(filteredData, d => d.state);
 
             // Set the domains of the scales
             x.domain(d3.extent(filteredData, d => d.date));
@@ -212,7 +209,7 @@ d3.csv("us-states.csv").then(data => {
 
             // Add the lines for each state
             svg.selectAll(".line")
-                .data(nestedData)
+                .data(d3.group(filteredData, d => d.state))
                 .enter().append("path")
                 .attr("class", "line")
                 .attr("d", d => line(d[1]))
@@ -230,32 +227,35 @@ d3.csv("us-states.csv").then(data => {
 
             // Manually add annotations
             const annotations = [
-                { date: "2021-01-01", cases: 1500000, label: "New Year surge", title: "January 2021" },
-                { date: "2021-09-01", cases: 2000000, label: "Delta variant surge", title: "September 2021" }
+                { date: "2021-01-01", cases: 1000000, label: "New Year surge", title: "January 2021" },
+                { date: "2021-09-01", cases: 1500000, label: "Delta variant surge", title: "September 2021" }
             ];
 
-            annotations.forEach(annotation => {
+            annotations.forEach((annotation, index) => {
                 const xPos = x(parseDate(annotation.date));
                 const yPos = y(annotation.cases);
+
+                // Adjust positions to avoid overlapping and crossing the y-axis
+                const offset = (index === 0) ? 100 : 200; // Adjust offset for non-overlapping
 
                 // Add annotation lines
                 svg.append("line")
                     .attr("class", "annotation-line")
                     .attr("x1", xPos)
                     .attr("y1", yPos)
-                    .attr("x2", xPos - 50)
+                    .attr("x2", xPos + offset)
                     .attr("y2", yPos - 50);
 
                 // Add annotation text
                 svg.append("text")
                     .attr("class", "annotation")
-                    .attr("x", xPos - 55)
+                    .attr("x", xPos + offset + 5)
                     .attr("y", yPos - 55)
                     .text(annotation.title);
 
                 svg.append("text")
                     .attr("class", "annotation")
-                    .attr("x", xPos - 55)
+                    .attr("x", xPos + offset + 5)
                     .attr("y", yPos - 40)
                     .text(annotation.label);
             });
@@ -283,6 +283,7 @@ d3.csv("us-states.csv").then(data => {
 
         d3.select("#container").append("button").text("Next").on("click", nextScene);
     }
+
 
 
     // Scene 3: Variants and Continued Impact in 2022
