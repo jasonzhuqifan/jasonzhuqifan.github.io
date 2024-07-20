@@ -227,8 +227,8 @@ d3.csv("us-states.csv").then(data => {
 
             // Manually add annotations
             const annotations = [
-                { date: "2021-01-01", cases: 1400000, label: "New Year surge", title: "January 2021" },
-                { date: "2021-09-01", cases: 3000000, label: "Delta variant surge", title: "September 2021" }
+                { date: "2021-01-01", cases: 1380000, label: "New Year surge", title: "January 2021" },
+                { date: "2021-09-01", cases: 3300000, label: "Delta variant surge", title: "September 2021" }
             ];
 
             annotations.forEach((annotation, index) => {
