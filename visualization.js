@@ -44,7 +44,7 @@ d3.csv("us-states.csv").then(data => {
 
     function scene1() {
         d3.select("#container").html(""); // Clear the container
-        d3.select("#container").append("h1").text("Initial Outbreak in 2020000");
+        d3.select("#container").append("h1").text("Initial Outbreak in 2020");
         d3.select("#container").append("p").text("The initial outbreak of COVID-19 in 2020 and its impact on key states.");
 
         // Set up the SVG and dimensions
@@ -75,9 +75,6 @@ d3.csv("us-states.csv").then(data => {
             const keyStates = ["California", "New York"];
             const filteredData = data.filter(d => keyStates.includes(d.state) && d.date.getFullYear() === 2020);
 
-            // Nest data by state
-            const nestedData = d3.group(filteredData, d => d.state);
-
             // Set the domains of the scales
             x.domain(d3.extent(filteredData, d => d.date));
             y.domain([0, d3.max(filteredData, d => d.cases)]);
@@ -89,7 +86,7 @@ d3.csv("us-states.csv").then(data => {
 
             // Add the lines for each state
             svg.selectAll(".line")
-                .data(nestedData)
+                .data(d3.group(filteredData, d => d.state))
                 .enter().append("path")
                 .attr("class", "line")
                 .attr("d", d => line(d[1]))
@@ -111,12 +108,12 @@ d3.csv("us-states.csv").then(data => {
                 { date: "2020-03-20", cases: 1000, label: "Lockdown starts", title: "March 2020" }
             ];
 
-            annotations.forEach(annotation => {
+            annotations.forEach((annotation, index) => {
                 const xPos = x(parseDate(annotation.date));
                 const yPos = y(annotation.cases);
 
-                // Adjust positions to avoid crossing the y-axis
-                const offset = xPos < 50 ? 50 : -50;
+                // Adjust positions to avoid overlapping and crossing the y-axis
+                const offset = (index === 0) ? 100 : -100; // Adjust offset for non-overlapping
 
                 // Add annotation lines
                 svg.append("line")
@@ -148,21 +145,22 @@ d3.csv("us-states.csv").then(data => {
                 .attr("transform", (d, i) => `translate(0,${i * 20})`);
 
             legend.append("rect")
-                .attr("x", width - 18)
-                .attr("width", 18)
-                .attr("height", 18)
-                .style("fill", (d, i) => d3.schemeCategory10[i]);
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", (d, i) => d3.schemeCategory10[i]);
 
-            legend.append("text")
-                .attr("x", width - 24)
-                .attr("y", 9)
-                .attr("dy", ".35em")
-                .style("text-anchor", "end")
-                .text(d => d);
-        });
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(d => d);
+    });
 
-        d3.select("#container").append("button").text("Next").on("click", nextScene);
-    }
+    d3.select("#container").append("button").text("Next").on("click", nextScene);
+}
+
 
 
 
