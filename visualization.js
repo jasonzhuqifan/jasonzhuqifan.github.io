@@ -113,7 +113,7 @@ d3.csv("us-states.csv").then(data => {
                 const yPos = y(annotation.cases);
 
                 // Adjust positions to avoid overlapping and crossing the y-axis
-                const offset = (index === 0) ? 100 : -100; // Adjust offset for non-overlapping
+                const offset = (index === 0) ? 100 : 300; // Adjust offset for non-overlapping
 
                 // Add annotation lines
                 svg.append("line")
