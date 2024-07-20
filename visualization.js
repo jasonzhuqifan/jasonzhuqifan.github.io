@@ -44,7 +44,7 @@ d3.csv("us-states.csv").then(data => {
 
     function scene1() {
         d3.select("#container").html(""); // Clear the container
-        d3.select("#container").append("h1").text("Initial Outbreak in 202020");
+        d3.select("#container").append("h1").text("Initial Outbreak in 2020000");
         d3.select("#container").append("p").text("The initial outbreak of COVID-19 in 2020 and its impact on key states.");
 
         // Set up the SVG and dimensions
@@ -115,24 +115,27 @@ d3.csv("us-states.csv").then(data => {
                 const xPos = x(parseDate(annotation.date));
                 const yPos = y(annotation.cases);
 
+                // Adjust positions to avoid crossing the y-axis
+                const offset = xPos < 50 ? 50 : -50;
+
                 // Add annotation lines
                 svg.append("line")
                     .attr("class", "annotation-line")
                     .attr("x1", xPos)
                     .attr("y1", yPos)
-                    .attr("x2", xPos - 50)
+                    .attr("x2", xPos + offset)
                     .attr("y2", yPos - 50);
 
                 // Add annotation text
                 svg.append("text")
                     .attr("class", "annotation")
-                    .attr("x", xPos - 55)
+                    .attr("x", xPos + offset + 5)
                     .attr("y", yPos - 55)
                     .text(annotation.title);
 
                 svg.append("text")
                     .attr("class", "annotation")
-                    .attr("x", xPos - 55)
+                    .attr("x", xPos + offset + 5)
                     .attr("y", yPos - 40)
                     .text(annotation.label);
             });
@@ -160,6 +163,7 @@ d3.csv("us-states.csv").then(data => {
 
         d3.select("#container").append("button").text("Next").on("click", nextScene);
     }
+
 
 
     // Scene 2: Peak and Decline in 2021
