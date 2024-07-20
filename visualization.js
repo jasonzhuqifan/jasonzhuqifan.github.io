@@ -36,9 +36,120 @@ d3.csv("us-states.csv").then(data => {
     }
 
     // Scene 1: Initial Outbreak in 2020
+    // function scene1() {
+    //     d3.select("#container").append("h1").text("Initial Outbreak in 2020");
+    //     // Add visualization code for scene 1
+    //     d3.select("#container").append("button").text("Next").on("click", nextScene);
+    // }
+
     function scene1() {
         d3.select("#container").append("h1").text("Initial Outbreak in 2020");
-        // Add visualization code for scene 1
+        d3.select("#container").append("p").text("The initial outbreak of COVID-19 in 2020 and its impact on key states.");
+
+        // Set up the SVG and dimensions
+        const margin = {top: 20, right: 30, bottom: 40, left: 40};
+        const width = 800 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select("#container").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Parse the date and set up scales
+        const parseDate = d3.timeParse("%Y-%m-%d");
+        const x = d3.scaleTime().range([0, width]);
+        const y = d3.scaleLinear().range([height, 0]);
+
+        // Load the data
+        d3.csv("covid_data.csv").then(data => {
+            data.forEach(d => {
+                d.date = parseDate(d.date);
+                d.cases = +d.cases;
+                d.deaths = +d.deaths;
+            });
+
+            // Filter data for key states and for the year 2020
+            const keyStates = ["California", "New York"];
+            const filteredData = data.filter(d => keyStates.includes(d.state) && d.date.getFullYear() === 2020);
+
+            // Nest data by state
+            const nestedData = d3.group(filteredData, d => d.state);
+
+            // Set the domains of the scales
+            x.domain(d3.extent(filteredData, d => d.date));
+            y.domain([0, d3.max(filteredData, d => d.cases)]);
+
+            // Create line generator
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.cases));
+
+            // Add the lines for each state
+            svg.selectAll(".line")
+                .data(nestedData)
+                .enter().append("path")
+                .attr("class", "line")
+                .attr("d", d => line(d[1]))
+                .style("stroke", (d, i) => d3.schemeCategory10[i])
+                .style("fill", "none");
+
+            // Add the X Axis
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            // Add the Y Axis
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            // Add annotations
+            const annotations = [
+                {
+                    note: { label: "First reported case", title: "January 2020" },
+                    x: x(parseDate("2020-01-22")),
+                    y: y(1),
+                    dy: -50,
+                    dx: -50
+                },
+                {
+                    note: { label: "Lockdown starts", title: "March 2020" },
+                    x: x(parseDate("2020-03-20")),
+                    y: y(1000),
+                    dy: -50,
+                    dx: -50
+                }
+            ];
+
+            const makeAnnotations = d3.annotation()
+                .annotations(annotations);
+
+            svg.append("g")
+                .attr("class", "annotation-group")
+                .call(makeAnnotations);
+
+            // Add a legend
+            const legend = svg.selectAll(".legend")
+                .data(keyStates)
+                .enter().append("g")
+                .attr("class", "legend")
+                .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+            legend.append("rect")
+                .attr("x", width - 18)
+                .attr("width", 18)
+                .attr("height", 18)
+                .style("fill", (d, i) => d3.schemeCategory10[i]);
+
+            legend.append("text")
+                .attr("x", width - 24)
+                .attr("y", 9)
+                .attr("dy", ".35em")
+                .style("text-anchor", "end")
+                .text(d => d);
+        });
+
         d3.select("#container").append("button").text("Next").on("click", nextScene);
     }
 
