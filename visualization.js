@@ -43,7 +43,8 @@ d3.csv("us-states.csv").then(data => {
     // }
 
     function scene1() {
-        d3.select("#container").append("h1").text("Initial Outbreak in 202020");
+        d3.select("#container").html(""); // Clear the container
+        d3.select("#container").append("h1").text("Initial Outbreak in 2020");
         d3.select("#container").append("p").text("The initial outbreak of COVID-19 in 2020 and its impact on key states.");
 
         // Set up the SVG and dimensions
@@ -104,30 +105,37 @@ d3.csv("us-states.csv").then(data => {
             svg.append("g")
                 .call(d3.axisLeft(y));
 
-            // Add annotations
+            // Manually add annotations
             const annotations = [
-                {
-                    note: { label: "First reported case", title: "January 2020" },
-                    x: x(parseDate("2020-01-22")),
-                    y: y(1),
-                    dy: -50,
-                    dx: -50
-                },
-                {
-                    note: { label: "Lockdown starts", title: "March 2020" },
-                    x: x(parseDate("2020-03-20")),
-                    y: y(1000),
-                    dy: -50,
-                    dx: -50
-                }
+                { date: "2020-01-22", cases: 1, label: "First reported case", title: "January 2020" },
+                { date: "2020-03-20", cases: 1000, label: "Lockdown starts", title: "March 2020" }
             ];
 
-            const makeAnnotations = d3.annotation()
-                .annotations(annotations);
+            annotations.forEach(annotation => {
+                const xPos = x(parseDate(annotation.date));
+                const yPos = y(annotation.cases);
 
-            svg.append("g")
-                .attr("class", "annotation-group")
-                .call(makeAnnotations);
+                // Add annotation lines
+                svg.append("line")
+                    .attr("class", "annotation-line")
+                    .attr("x1", xPos)
+                    .attr("y1", yPos)
+                    .attr("x2", xPos - 50)
+                    .attr("y2", yPos - 50);
+
+                // Add annotation text
+                svg.append("text")
+                    .attr("class", "annotation")
+                    .attr("x", xPos - 55)
+                    .attr("y", yPos - 55)
+                    .text(annotation.title);
+
+                svg.append("text")
+                    .attr("class", "annotation")
+                    .attr("x", xPos - 55)
+                    .attr("y", yPos - 40)
+                    .text(annotation.label);
+            });
 
             // Add a legend
             const legend = svg.selectAll(".legend")
