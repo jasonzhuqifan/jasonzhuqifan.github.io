@@ -195,7 +195,7 @@ d3.csv("us-states.csv").then(data => {
             });
 
             // Filter data for key states and for the year 2021
-            const keyStates = ["California", "Florida"];
+            const keyStates = ["California", "New York"];
             const filteredData = data.filter(d => keyStates.includes(d.state) && d.date.getFullYear() === 2021);
 
             // Nest data by state
@@ -230,8 +230,8 @@ d3.csv("us-states.csv").then(data => {
 
             // Manually add annotations
             const annotations = [
-                { date: "2021-01-01", cases: 20000, label: "New Year surge", title: "January 2021" },
-                { date: "2021-09-01", cases: 150000, label: "Delta variant surge", title: "September 2021" }
+                { date: "2021-01-01", cases: 1500000, label: "New Year surge", title: "January 2021" },
+                { date: "2021-09-01", cases: 2000000, label: "Delta variant surge", title: "September 2021" }
             ];
 
             annotations.forEach(annotation => {
