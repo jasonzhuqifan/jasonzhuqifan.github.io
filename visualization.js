@@ -44,11 +44,11 @@ d3.csv("us-states.csv").then(data => {
 
     function scene1() {
         d3.select("#container").html(""); // Clear the container
-        d3.select("#container").append("h1").text("Initial Outbreak in 2020");
+        d3.select("#container").append("h1").text("Initial Outbreak in 202020");
         d3.select("#container").append("p").text("The initial outbreak of COVID-19 in 2020 and its impact on key states.");
 
         // Set up the SVG and dimensions
-        const margin = {top: 20, right: 30, bottom: 40, left: 40};
+        const margin = {top: 20, right: 30, bottom: 40, left: 50};
         const width = 800 - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
 
@@ -103,7 +103,7 @@ d3.csv("us-states.csv").then(data => {
 
             // Add the Y Axis
             svg.append("g")
-                .call(d3.axisLeft(y));
+                .call(d3.axisLeft(y).ticks(10).tickFormat(d3.format("~s")));
 
             // Manually add annotations
             const annotations = [
@@ -160,6 +160,7 @@ d3.csv("us-states.csv").then(data => {
 
         d3.select("#container").append("button").text("Next").on("click", nextScene);
     }
+
 
     // Scene 2: Peak and Decline in 2021
     function scene2() {
