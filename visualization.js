@@ -290,8 +290,8 @@ d3.csv("us-states.csv").then(data => {
                 .call(d3.axisLeft(y).ticks(10).tickFormat(d3.format("~s")));
 
             const annotations = [
-                { date: "2022-01-01", cases: 2000000, label: "Omicron variant surge", title: "January 2022" },
-                { date: "2022-07-01", cases: 6000000, label: "Summer wave", title: "July 2022" }
+                { date: "2022-01-01", cases: 4200000, label: "Omicron variant surge", title: "January 2022" },
+                { date: "2022-07-01", cases: 6500000, label: "Summer wave", title: "July 2022" }
             ];
 
             annotations.forEach((annotation, index) => {
