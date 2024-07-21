@@ -400,17 +400,18 @@ d3.csv("us-states.csv").then(data => {
                 svg.selectAll(".annotation").remove();
 
                 const annotations = [
-                    { date: "2020-03-20", cases: d3.max(filteredData, d => d.cases) * 0.5, label: "Initial peak", title: "March 2020 Peak" },
-                    { date: "2021-01-01", cases: d3.max(filteredData, d => d.cases) * 0.8, label: "Winter surge", title: "January 2021 Surge" },
-                    { date: "2022-07-01", cases: d3.max(filteredData, d => d.cases) * 0.2, label: "Summer decline", title: "July 2022 Decline" }
+                    { date: "2020-03-20", label: "Initial peak", title: "March 2020 Peak" },
+                    { date: "2021-01-01", label: "Winter surge", title: "January 2021 Surge" },
+                    { date: "2022-07-01", label: "Summer decline", title: "July 2022 Decline" }
                 ];
 
                 annotations.forEach((annotation, index) => {
+                    const annotationData = filteredData.find(d => d.date.getTime() === parseDate(annotation.date).getTime());
                     const xPos = x(parseDate(annotation.date));
-                    const yPos = y(annotation.cases);
+                    const yPos = y(annotationData ? annotationData.cases : 0);
 
                     // Adjust positions to avoid overlapping and crossing the y-axis
-                    const offset = (index % 2 === 0) ? 100 : 200; // Alternate offset for non-overlapping
+                    const offset = (index % 2 === 0) ? 100 : -100; // Alternate offset for non-overlapping
 
                     // Add annotation lines
                     svg.append("line")
