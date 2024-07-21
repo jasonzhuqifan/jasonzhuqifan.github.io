@@ -308,6 +308,16 @@ d3.csv("us-states.csv").then(data => {
         const x = d3.scaleTime().range([0, width]);
         const y = d3.scaleLinear().range([height, 0]);
 
+        // Create line generator for cases
+        const lineCases = d3.line()
+            .x(d => x(d.date))
+            .y(d => y(d.cases));
+
+        // Create line generator for deaths
+        const lineDeaths = d3.line()
+            .x(d => x(d.date))
+            .y(d => y(d.deaths));
+
         // Load the data
         d3.csv("us-states.csv").then(data => {
             data.forEach(d => {
@@ -316,42 +326,26 @@ d3.csv("us-states.csv").then(data => {
                 d.deaths = +d.deaths;
             });
 
-            // Filter data for the entire period
-            const keyStates = ["California", "New York", "Florida", "Texas"];
-            const filteredData = data.filter(d => keyStates.includes(d.state));
+            // Get unique states from the data
+            const states = [...new Set(data.map(d => d.state))].sort();
+
+            // Create a dropdown menu for state selection
+            const dropdown = d3.select("#container").append("select")
+                .attr("id", "stateDropdown")
+                .on("change", updateChart);
+
+            dropdown.selectAll("option")
+                .data(states)
+                .enter().append("option")
+                .text(d => d)
+                .attr("value", d => d);
+
+            // Set initial state selection
+            dropdown.property("value", states[0]);
 
             // Set the domains of the scales
-            x.domain(d3.extent(filteredData, d => d.date));
-            y.domain([0, d3.max(filteredData, d => d.cases)]);
-
-            // Create line generator for cases
-            const lineCases = d3.line()
-                .x(d => x(d.date))
-                .y(d => y(d.cases));
-
-            // Create line generator for deaths
-            const lineDeaths = d3.line()
-                .x(d => x(d.date))
-                .y(d => y(d.deaths));
-
-            // Add the lines for cases and deaths
-            svg.selectAll(".line-cases")
-                .data(d3.group(filteredData, d => d.state))
-                .enter().append("path")
-                .attr("class", "line-cases")
-                .attr("d", d => lineCases(d[1]))
-                .style("stroke", (d, i) => d3.schemeCategory10[i])
-                .style("fill", "none")
-                .style("stroke-dasharray", "4 4");
-
-            svg.selectAll(".line-deaths")
-                .data(d3.group(filteredData, d => d.state))
-                .enter().append("path")
-                .attr("class", "line-deaths")
-                .attr("d", d => lineDeaths(d[1]))
-                .style("stroke", (d, i) => d3.schemeCategory10[i])
-                .style("fill", "none")
-                .style("stroke-dasharray", "2 2");
+            x.domain(d3.extent(data, d => d.date));
+            y.domain([0, d3.max(data, d => d.cases)]);
 
             // Add the X Axis
             svg.append("g")
@@ -362,67 +356,87 @@ d3.csv("us-states.csv").then(data => {
             svg.append("g")
                 .call(d3.axisLeft(y).ticks(10).tickFormat(d3.format("~s")));
 
-            // Add a legend for cases and deaths
-            const legend = svg.selectAll(".legend")
-                .data(keyStates)
-                .enter().append("g")
-                .attr("class", "legend")
-                .attr("transform", (d, i) => `translate(0,${i * 40})`);
+            // Function to update the chart based on selected state
+            function updateChart() {
+                const selectedState = d3.select("#stateDropdown").property("value");
+                const filteredData = data.filter(d => d.state === selectedState);
 
-            legend.append("rect")
-                .attr("x", width - 18)
-                .attr("width", 18)
-                .attr("height", 18)
-                .style("fill", (d, i) => d3.schemeCategory10[i]);
+                // Remove existing lines
+                svg.selectAll(".line-cases").remove();
+                svg.selectAll(".line-deaths").remove();
 
-            legend.append("text")
-                .attr("x", width - 24)
-                .attr("y", 9)
-                .attr("dy", ".35em")
-                .style("text-anchor", "end")
-                .text(d => d);
+                // Add the lines for cases and deaths
+                svg.append("path")
+                    .datum(filteredData)
+                    .attr("class", "line-cases")
+                    .attr("d", lineCases)
+                    .style("stroke", d3.schemeCategory10[0])
+                    .style("fill", "none")
+                    .style("stroke-dasharray", "4 4");
 
-            // Add annotations for key trends
-            const annotations = [
-                { date: "2020-03-20", cases: 200000, label: "Initial peak", title: "March 2020 Peak" },
-                { date: "2021-01-01", cases: 400000, label: "Winter surge", title: "January 2021 Surge" },
-                { date: "2022-07-01", cases: 100000, label: "Summer decline", title: "July 2022 Decline" }
-            ];
+                svg.append("path")
+                    .datum(filteredData)
+                    .attr("class", "line-deaths")
+                    .attr("d", lineDeaths)
+                    .style("stroke", d3.schemeCategory10[1])
+                    .style("fill", "none")
+                    .style("stroke-dasharray", "2 2");
 
-            annotations.forEach((annotation, index) => {
-                const xPos = x(parseDate(annotation.date));
-                const yPos = y(annotation.cases);
+                // Update annotations for the selected state
+                updateAnnotations(filteredData);
+            }
 
-                // Adjust positions to avoid overlapping and crossing the y-axis
-                const offset = (index % 2 === 0) ? 100 : 200; // Alternate offset for non-overlapping
+            // Initial chart rendering
+            updateChart();
 
-                // Add annotation lines
-                svg.append("line")
-                    .attr("class", "annotation-line")
-                    .attr("x1", xPos)
-                    .attr("y1", yPos)
-                    .attr("x2", xPos + offset)
-                    .attr("y2", yPos - 50);
+            // Function to update annotations
+            function updateAnnotations(filteredData) {
+                // Remove existing annotations
+                svg.selectAll(".annotation-line").remove();
+                svg.selectAll(".annotation").remove();
 
-                // Add annotation text
-                svg.append("text")
-                    .attr("class", "annotation")
-                    .attr("x", xPos + offset + 5)
-                    .attr("y", yPos - 55)
-                    .text(annotation.title);
+                const annotations = [
+                    { date: "2020-03-20", cases: 200000, label: "Initial peak", title: "March 2020 Peak" },
+                    { date: "2021-01-01", cases: 400000, label: "Winter surge", title: "January 2021 Surge" },
+                    { date: "2022-07-01", cases: 100000, label: "Summer decline", title: "July 2022 Decline" }
+                ];
 
-                svg.append("text")
-                    .attr("class", "annotation")
-                    .attr("x", xPos + offset + 5)
-                    .attr("y", yPos - 40)
-                    .text(annotation.label);
-            });
+                annotations.forEach((annotation, index) => {
+                    const xPos = x(parseDate(annotation.date));
+                    const yPos = y(annotation.cases);
+
+                    // Adjust positions to avoid overlapping and crossing the y-axis
+                    const offset = (index % 2 === 0) ? 100 : 200; // Alternate offset for non-overlapping
+
+                    // Add annotation lines
+                    svg.append("line")
+                        .attr("class", "annotation-line")
+                        .attr("x1", xPos)
+                        .attr("y1", yPos)
+                        .attr("x2", xPos + offset)
+                        .attr("y2", yPos - 50);
+
+                    // Add annotation text
+                    svg.append("text")
+                        .attr("class", "annotation")
+                        .attr("x", xPos + offset + 5)
+                        .attr("y", yPos - 55)
+                        .text(annotation.title);
+
+                    svg.append("text")
+                        .attr("class", "annotation")
+                        .attr("x", xPos + offset + 5)
+                        .attr("y", yPos - 40)
+                        .text(annotation.label);
+                });
+            }
 
             d3.select("#container").append("button").text("Finish").on("click", () => {
                 alert("Thank you for viewing the COVID-19 trends overview!");
             });
         });
     }
+
 
 
     // Exploration Scene: Interactive Data Exploration
