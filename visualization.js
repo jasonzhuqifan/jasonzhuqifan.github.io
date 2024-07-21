@@ -458,7 +458,7 @@ d3.csv("us-states.csv").then(data => {
                     { date: "2020-03-20", label: "Initial peak", title: "March 2020 Peak" },
                     { date: "2021-01-01", label: "New Year surge", title: "January 2021 Surge" },
                     { date: "2021-09-01", label: "Delta variant surge", title: "September 2021" },
-                    { date: "2022-01-01", label: "Omicron variant surge", title: "January 2022" }
+                    { date: "2022-01-01", label: "Omicron variant surge", title: "January 2022" },
                     { date: "2022-07-01", label: "Summer decline", title: "July 2022 Decline" }];
 
                 annotations.forEach((annotation, index) => {
