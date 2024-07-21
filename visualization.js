@@ -343,9 +343,8 @@ d3.csv("us-states.csv").then(data => {
             // Set initial state selection
             dropdown.property("value", states[0]);
 
-            // Set the domains of the scales
+            // Set the domains of the x scale
             x.domain(d3.extent(data, d => d.date));
-            y.domain([0, d3.max(data, d => d.cases)]);
 
             // Add the X Axis
             svg.append("g")
@@ -353,13 +352,18 @@ d3.csv("us-states.csv").then(data => {
                 .call(d3.axisBottom(x));
 
             // Add the Y Axis
-            svg.append("g")
-                .call(d3.axisLeft(y).ticks(10).tickFormat(d3.format("~s")));
+            const yAxis = svg.append("g");
 
             // Function to update the chart based on selected state
             function updateChart() {
                 const selectedState = d3.select("#stateDropdown").property("value");
                 const filteredData = data.filter(d => d.state === selectedState);
+
+                // Update the y domain based on the selected state
+                y.domain([0, d3.max(filteredData, d => Math.max(d.cases, d.deaths))]);
+
+                // Update the Y Axis
+                yAxis.transition().duration(1000).call(d3.axisLeft(y).ticks(10).tickFormat(d3.format("~s")));
 
                 // Remove existing lines
                 svg.selectAll(".line-cases").remove();
@@ -396,9 +400,9 @@ d3.csv("us-states.csv").then(data => {
                 svg.selectAll(".annotation").remove();
 
                 const annotations = [
-                    { date: "2020-03-20", cases: 200000, label: "Initial peak", title: "March 2020 Peak" },
-                    { date: "2021-01-01", cases: 400000, label: "Winter surge", title: "January 2021 Surge" },
-                    { date: "2022-07-01", cases: 100000, label: "Summer decline", title: "July 2022 Decline" }
+                    { date: "2020-03-20", cases: d3.max(filteredData, d => d.cases) * 0.5, label: "Initial peak", title: "March 2020 Peak" },
+                    { date: "2021-01-01", cases: d3.max(filteredData, d => d.cases) * 0.8, label: "Winter surge", title: "January 2021 Surge" },
+                    { date: "2022-07-01", cases: d3.max(filteredData, d => d.cases) * 0.2, label: "Summer decline", title: "July 2022 Decline" }
                 ];
 
                 annotations.forEach((annotation, index) => {
