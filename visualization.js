@@ -345,7 +345,7 @@ d3.csv("us-states.csv").then(data => {
     function explorationScene() {
         d3.select("#container").html(""); // Clear the container
         d3.select("#container").append("h1").text("COVID-19 Trends Overview (2020-2022)");
-        d3.select("#container").append("p").text("An overview of COVID-19 cases and deaths across the entire period from 2020 to 2022.");
+        d3.select("#container").append("p").text("Explore COVID-19 data interactively by toggling the dropdown to view the overall trend for the state of your interest");
 
         // Set up the SVG and dimensions
         const margin = {top: 20, right: 30, bottom: 40, left: 50};
